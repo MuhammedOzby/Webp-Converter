@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/vue/vue.min.js"></script>
+    <title>Web scrape</title>
+</head>
+
+<body class="bg-light user-select-none">
+    <loader class="d-flex align-items-center justify-content-center">
+        <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </loader>
+    <header class="p-3" style="-webkit-app-region: drag">
+        <nav class="navbar fixed-top navbar-light bg-gradient-nav">
+            <div class="container-fluid">
+                <a class="navbar-brand text-white display-6" href="#">
+                    Webp Converter
+                </a>
+                <div class="d-flex">
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                        <li><a href="#" class="nav-link px-2 text-white">Export</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white">Save</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white">Reset</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white" id="close-btn">Close</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container" style="margin-top: 50px;">
+        <main id="appBody">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="button" @click="getFiles()">Get Images</button>
+                    </div>
+                </div>
+                <div class="col-12 row">
+                    <h1> Options </h1>
+                    <hr class="my-4 col-12">
+                    <div class="form-check form-switch mb-3 fs-3">
+                        <input class="form-check-input" type="checkbox" v-model="lossless">
+                        <label class="form-check-label " for="losslessStatus">Lossless</label>
+                    </div>
+                    <div class="col-12" v-if="!lossless">
+                        <div class="form-floating float-start col-6 p-1">
+                            <input type="number" class="form-control" id="qualityOpt" v-model="quality">
+                            <label for="qualityOpt">Enter quality value</label>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch mb-3 fs-3">
+                        <input class="form-check-input" type="checkbox" v-model="resizeStatus">
+                        <label class="form-check-label" for="resizeStatus">Resize</label>
+                    </div>
+                    <div class="form-check form-switch mb-3 fs-3" v-if="resizeStatus">
+                        <input class="form-check-input" type="checkbox" v-model="aspectRatio">
+                        <label class="form-check-label" for="resizeStatus">Aspect Ratio</label>
+                    </div>
+                    <div class="col-12" v-if="aspectRatio & resizeStatus">
+                        <div class="form-floating float-start col-6 p-1">
+                            <input type="number" class="form-control" id="ratioWidthOpt" v-model="raitoWidth">
+                            <label for="ratioWidthOpt">Enter Ratio width value</label>
+                        </div>
+                        <div class="form-floating float-start col-6 p-1">
+                            <input type="number" class="form-control" id="ratioHeightOpt" v-model="ratioHeight">
+                            <label for="ratioHeightOpt">Enter Ratio height value</label>
+                        </div>
+                    </div>
+                    <div class="col-12" v-if="resizeStatus">
+                        <div class="form-floating float-start col-6 p-1">
+                            <input type="number" class="form-control" id="widthOpt" v-model="width">
+                            <label for="widthOpt">Enter width value</label>
+                        </div>
+                        <div class="form-floating float-start col-6 p-1">
+                            <input type="number" class="form-control" id="heightOpt" v-model="height"
+                                :disabled="aspectRatio">
+                            <label for="heightOpt">Enter height value</label>
+                        </div>
+                    </div>
+                    <hr class="my-4 col-12">
+                    <div class="input-group mb-3 col-12">
+                        <button class="btn btn-outline-secondary" type="button" @click="outputFolderSelect()">Select
+                            Output Folder</button>
+                        <input type="text" class="form-control" placeholder="" v-model="outputFolder">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" type="button" @click="convertAndSave()"
+                                data-bs-toggle="modal" data-bs-target="#onProcess">Convert</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between lh-sm" v-for="(file, index) in files">
+                            <div>
+                                <h6 class="my-0">{{ path.basename(file) }}</h6>
+                                <span class="text-danger pointer" v-on:click="removeFile(index)">Remove</span>
+                                <img v-bind:src="file" alt="" style="width: 100%;">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal fade" id="onProcess" tabindex="-1" aria-labelledby="onProcessLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div v-for="(value, name) in process">
+                                    {{ name }}: {{ value }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="my-5 pt-5 text-muted text-center text-small">
+            <a href="https://github.com/MuhammedOzby/MuhammedOzby">https://github.com/MuhammedOzby/MuhammedOzby</a>
+        </footer>
+    </div>
+
+
+    <script src="js/custom/window-controller.js"></script>
+    <script src="js/custom/page/index.js" defer></script>
+</body>
+
+</html>

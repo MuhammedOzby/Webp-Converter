@@ -1,0 +1,22 @@
+{
+  "name": "nodejs-webp-converter",
+  "version": "0.0.1",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^13.1.7",
+    "eslint": "^7.30.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0"
+  },
+  "dependencies": {
+    "webp-converter": "^2.3.3"
+  }
+}
